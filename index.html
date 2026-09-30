@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Readiness Score — VisionQuantech</title>
+<style>
+  :root{
+    --bg:#0b0f1a; --card:#121827; --card2:#0f1522;
+    --txt:#e8ecf4; --muted:#9aa3b5;
+    --grad:linear-gradient(135deg,#6c4cf1,#00d1b2);
+    --acc:#6c4cf1; --acc2:#00d1b2;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:24px 16px 60px}
+  .wrap{width:100%;max-width:640px}
+  .badge-top{display:inline-block;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--acc2);margin-bottom:10px}
+  h1{font-size:clamp(26px,5vw,38px);line-height:1.15;margin-bottom:8px}
+  h1 .grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  p.sub{color:var(--muted);font-size:15px;line-height:1.6;margin-bottom:20px}
+  .card{background:var(--card);border:1px solid #1e2740;border-radius:var(--radius);padding:24px;box-shadow:0 10px 40px rgba(0,0,0,.45)}
+  .screen{display:none}
+  .screen.active{display:block;animation:fade .35s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  label.lbl{display:block;font-size:13px;color:var(--muted);margin:14px 0 6px;font-weight:600}
+  input[type=text],select,textarea{width:100%;background:#0d1321;border:1px solid #26304d;color:var(--txt);border-radius:10px;padding:12px 14px;font-size:15px;font-family:inherit;outline:none}
+  input[type=text]:focus,select:focus{border-color:var(--acc)}
+  textarea{resize:vertical;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
+  .btn{display:inline-block;border:none;cursor:pointer;background:var(--grad);color:#fff;font-weight:700;font-size:16px;padding:14px 28px;border-radius:12px;width:100%;margin-top:20px;transition:transform .15s,box-shadow .15s}
+  .btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(108,76,241,.4)}
+  .btn:active{transform:none}
+  .btn.ghost{background:#1a2338;box-shadow:none}
+  .btn-row{display:flex;gap:10px;margin-top:20px}
+  .btn-row .btn{margin-top:0}
+  /* progress */
+  .prog-wrap{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .prog{flex:1;height:8px;background:#1c2440;border-radius:99px;overflow:hidden}
+  .prog>div{height:100%;width:0;background:var(--grad);border-radius:99px;transition:width .4s ease}
+  .prog-txt{font-size:13px;color:var(--muted);white-space:nowrap}
+  .q-cat{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--acc2);margin-bottom:6px}
+  .q-text{font-size:20px;font-weight:700;line-height:1.4;margin-bottom:18px}
+  .opt{display:block;width:100%;text-align:left;background:#0d1321;border:1px solid #26304d;color:var(--txt);border-radius:12px;padding:14px 16px;font-size:15px;margin-bottom:10px;cursor:pointer;transition:border-color .15s,background .15s}
+  .opt:hover{border-color:var(--acc);background:#111a2e}
+  .opt small{display:block;color:var(--muted);font-size:12.5px;margin-top:4px}
+  .back{margin-top:14px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px}
+  .back:hover{color:var(--txt)}
+  /* score ring */
+  .ring-wrap{display:flex;flex-direction:column;align-items:center;margin:10px 0 6px}
+  svg.ring{width:200px;height:200px;transform:rotate(-90deg)}
+  .ring-bg{fill:none;stroke:#1c2440;stroke-width:14}
+  .ring-fg{fill:none;stroke:url(#g1);stroke-width:14;stroke-linecap:round;transition:stroke-dashoffset 1.6s cubic-bezier(.22,1,.36,1)}
+  .score-num{font-size:54px;font-weight:800}
+  .grade{font-size:20px;font-weight:700;margin-top:2px}
+  .grade-sub{color:var(--muted);font-size:14px;margin-top:4px}
+  /* category bars */
+  .cat-row{margin:14px 0}
+  .cat-head{display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px}
+  .cat-head b{font-weight:700}
+  .cat-head span{color:var(--muted)}
+  .bar{height:10px;background:#1c2440;border-radius:99px;overflow:hidden}
+  .bar>div{height:100%;width:0;background:var(--grad);border-radius:99px;transition:width 1s cubic-bezier(.22,1,.36,1)}
+  /* recs */
+  .rec{background:#0d1321;border:1px solid #26304d;border-left:4px solid var(--acc2);border-radius:10px;padding:14px 16px;margin-bottom:12px}
+  .rec h3{font-size:15px;margin-bottom:6px}
+  .rec p{font-size:14px;color:var(--muted);line-height:1.55}
+  h2.sec{font-size:17px;margin:26px 0 12px;letter-spacing:.5px}
+  .footer{margin-top:36px;font-size:12.5px;text-align:center;color:#5d667c;line-height:1.6;max-width:640px}
+  .ok{font-size:13px;color:var(--acc2);margin-top:8px;min-height:18px}
+  @media(max-width:480px){.btn-row{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- INTRO -->
+  <section class="screen active" id="s-intro">
+    <div class="badge-top">VisionQuantech · Demo</div>
+    <h1>Is your business <span class="grad">AI-ready?</span></h1>
+    <p class="sub">Answer 10 quick questions about how you handle leads, bookings, follow-ups, reviews, and data. Get an instant 0–100 readiness score, a breakdown by category, and your top 3 fixes — in under two minutes.</p>
+    <div class="card">
+      <label class="lbl" for="bizname">Business name</label>
+      <input type="text" id="bizname" placeholder="e.g. SmileCare Dental Studio" maxlength="60">
+      <label class="lbl" for="vertical">Business vertical</label>
+      <select id="vertical">
+        <option value="clinic">Clinic / Healthcare</option>
+        <option value="hotel">Hotel / Hospitality</option>
+        <option value="realestate">Real Estate</option>
+        <option value="other">Other local business</option>
+      </select>
+      <button class="btn" id="startBtn">Start the assessment →</button>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section class="screen" id="s-quiz">
+    <div class="prog-wrap">
+      <div class="prog"><div id="progFill"></div></div>
+      <div class="prog-txt" id="progTxt">1 / 10</div>
+    </div>
+    <div class="card">
+      <div class="q-cat" id="qCat"></div>
+      <div class="q-text" id="qText"></div>
+      <div id="opts"></div>
+      <button class="back" id="backBtn">← Back</button>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="screen" id="s-result">
+    <div class="badge-top">Your results</div>
+    <h1 id="rBiz">AI Readiness Report</h1>
+    <p class="sub" id="rDate"></p>
+    <div class="card">
+      <div class="ring-wrap">
+        <svg class="ring" viewBox="0 0 200 200">
+          <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#6c4cf1"/><stop offset="1" stop-color="#00d1b2"/>
+          </linearGradient></defs>
+          <circle class="ring-bg" cx="100" cy="100" r="84"/>
+          <circle class="ring-fg" id="ringFg" cx="100" cy="100" r="84"/>
+        </svg>
+        <div style="margin-top:-138px;text-align:center;margin-bottom:78px">
+          <div class="score-num" id="scoreNum">0</div>
+          <div class="grade" id="gradeTxt"></div>
+          <div class="grade-sub">out of 100</div>
+        </div>
+      </div>
+      <h2 class="sec">Category breakdown</h2>
+      <div id="catBars"></div>
+      <h2 class="sec">Top 3 fixes for <span id="rBiz2"></span></h2>
+      <div id="recs"></div>
+      <div class="btn-row">
+        <button class="btn" id="copyReport">Copy my report</button>
+        <button class="btn ghost" id="retakeBtn">Retake</button>
+      </div>
+      <div class="ok" id="reportOk"></div>
+      <h2 class="sec">Embed badge</h2>
+      <p class="sub" style="margin-bottom:10px">Paste this on your website to show your score.</p>
+      <textarea id="embedBox" rows="6" readonly></textarea>
+      <button class="btn" id="copyEmbed">Copy badge code</button>
+      <div class="ok" id="embedOk"></div>
+    </div>
+  </section>
+
+  <div class="footer">Self-assessment demo · VisionQuantech prototype — scores are indicative, not audited.<br>All scoring happens in your browser. No data leaves this page.</div>
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ---------- data ---------- */
+var CATS = [
+  {id:"lead",  name:"Lead Response"},
+  {id:"book",  name:"Booking & Scheduling"},
+  {id:"follow",name:"Follow-up & Nurture"},
+  {id:"rev",   name:"Reviews & Reputation"},
+  {id:"data",  name:"Data & Insights"}
+];
+var Q = [
+  {cat:0,q:"A new enquiry comes in. How fast do you usually respond?",
+   o:[["Instantly — automated or always-on",3],["Within an hour",2],["Same day",1],["Whenever someone gets around to it",0]]},
+  {cat:0,q:"What happens to enquiries that arrive after business hours?",
+   o:[["An AI/chat system handles them immediately",3],["They get a reply first thing next morning",2],["They wait until someone notices",1],["They often get missed entirely",0]]},
+  {cat:1,q:"How do customers book appointments or visits with you?",
+   o:[["Online self-booking, 24/7, with auto-confirmation",3],["Online booking form, confirmed manually",2],["Phone / WhatsApp only",1],["Walk-ins — no real booking process",0]]},
+  {cat:1,q:"How do you handle no-shows and reminders?",
+   o:[["Automatic reminders + smart rebooking",3],["Manual reminders sent by staff",2],["We remind sometimes",1],["No reminders at all",0]]},
+  {cat:2,q:"A quote or enquiry goes cold. What happens next?",
+   o:[["Automated multi-touch follow-up sequence runs",3],["Staff follow up once or twice",2],["We follow up rarely, ad hoc",1],["We never follow up",0]]},
+  {cat:2,q:"Do you stay in touch with past customers to win repeat business?",
+   o:[["Automated campaigns keep us top of mind",3],["Occasional manual messages or offers",2],["Rarely — only when we're quiet",1],["Never — we rely on new customers",0]]},
+  {cat:3,q:"How do you collect online reviews?",
+   o:[["Automatic requests after every visit/booking",3],["We ask in person sometimes",2],["We hope customers leave one",1],["We don't collect reviews",0]]},
+  {cat:3,q:"How fast do you respond to online reviews (good or bad)?",
+   o:[["Always — quickly, with a personal touch",3],["Usually, within a few days",2],["Only the bad ones, eventually",1],["We don't reply to reviews",0]]},
+  {cat:4,q:"Do you know which marketing channel brings your best customers?",
+   o:[["Yes — tracked and reported automatically",3],["Roughly, from asking customers",2],["Vague idea, no real tracking",1],["No idea at all",0]]},
+  {cat:4,q:"How do you measure what's working in your business week to week?",
+   o:[["Live dashboards with clear KPIs",3],["Spreadsheets, reviewed monthly",2],["Gut feel",1],["We don't measure",0]]}
+];
+var FIXES = {
+  lead:  {t:"Add instant, 24/7 lead response",
+          d:"Most enquiries go to whoever replies first. An AI chat/call agent that answers instantly — even at 2am — can lift conversion by 30–50%. Start with automated replies on WhatsApp and your website."},
+  book:  {t:"Move to automated online booking",
+          d:"Every phone-tag booking is a lost customer. Add 24/7 self-booking with auto-confirmation and automatic reminders — no-shows typically drop 40%+ with reminders alone."},
+  follow:{t:"Automate follow-up & nurture",
+          d:"Fortunes are in the follow-up: most sales need 5+ touches, most businesses stop at one. A simple automated sequence (day 1, 3, 7, 14) recovers quotes that would otherwise die silently."},
+  rev:   {t:"Systematize reviews & responses",
+          d:"Star ratings decide who gets the click. Send an automatic review request after every visit, and reply to every review within 24 hours — it compounds into free local SEO."},
+  data:  {t:"Track what actually works",
+          d:"You can't improve what you don't measure. Tag every lead source, track conversion by channel, and review a simple weekly dashboard — then double down on what pays."}
+};
+/* ---------- state ---------- */
+var answers = new Array(10).fill(-1);
+var idx = 0, biz = "", vert = "clinic";
+var VERTS = {clinic:"Clinic / Healthcare", hotel:"Hotel / Hospitality", realestate:"Real Estate", other:"Other local business"};
+function $(id){return document.getElementById(id);}
+function show(id){
+  var s=document.querySelectorAll(".screen");
+  for(var i=0;i<s.length;i++) s[i].classList.remove("active");
+  $(id).classList.add("active");
+  window.scrollTo(0,0);
+}
+/* ---------- quiz flow ---------- */
+function renderQ(){
+  var q = Q[idx];
+  $("qCat").textContent = CATS[q.cat].name;
+  $("qText").textContent = q.q;
+  $("progFill").style.width = ((idx)/10*100)+"%";
+  $("progTxt").textContent = (idx+1)+" / 10";
+  var box = $("opts"); box.innerHTML="";
+  for(var i=0;i<4;i++){
+    (function(i){
+      var b=document.createElement("button");
+      b.className="opt";
+      b.innerHTML = q.o[i][0];
+      b.onclick=function(){ answers[idx]=q.o[i][1]; idx++; if(idx>=10){finish();} else renderQ(); };
+      box.appendChild(b);
+    })(i);
+  }
+  $("backBtn").style.visibility = idx===0 ? "hidden":"visible";
+}
+$("backBtn").onclick=function(){ if(idx>0){idx--;renderQ();} };
+$("startBtn").onclick=function(){
+  biz = $("bizname").value.trim() || "Your business";
+  vert = $("vertical").value;
+  answers = new Array(10).fill(-1); idx=0;
+  show("s-quiz"); renderQ();
+};
+/* ---------- scoring ---------- */
+function gradeOf(s){
+  if(s>=90) return "AI-Ready";
+  if(s>=70) return "Almost There";
+  if(s>=50) return "Leaking Leads";
+  if(s>=30) return "Manual Mode";
+  return "Urgent";
+}
+function gradeColor(s){
+  if(s>=90) return "#00d1b2";
+  if(s>=70) return "#7ee081";
+  if(s>=50) return "#ffd166";
+  if(s>=30) return "#ff9f5a";
+  return "#ff5a5a";
+}
+function finish(){
+  var catSum=[0,0,0,0,0];
+  for(var i=0;i<10;i++) catSum[Q[i].cat]+=answers[i];
+  // each category max 6 pts -> percent; overall = mean of category percents (equal weight)
+  var catPct=catSum.map(function(s){return Math.round(s/6*100);});
+  var total=Math.round(catPct.reduce(function(a,b){return a+b;},0)/5);
+  renderResults(total,catPct);
+  show("s-result");
+}
+function renderResults(total,catPct){
+  $("rBiz").textContent = biz+" — AI Readiness Report";
+  $("rBiz2").textContent = biz;
+  var d=new Date();
+  $("rDate").textContent = VERTS[vert]+" · Assessed "+d.toLocaleDateString()+" · Indicative score, not audited";
+  var g=gradeOf(total), c=gradeColor(total);
+  $("gradeTxt").textContent=g; $("gradeTxt").style.color=c;
+  // ring
+  var circ=2*Math.PI*84, ring=$("ringFg");
+  ring.style.strokeDasharray=circ;
+  ring.style.strokeDashoffset=circ;
+  setTimeout(function(){ ring.style.strokeDashoffset=circ*(1-total/100); },80);
+  // count-up
+  var n=0, step=Math.max(1,Math.round(total/60));
+  var t=setInterval(function(){
+    n+=step; if(n>=total){n=total;clearInterval(t);}
+    $("scoreNum").textContent=n;
+  },28);
+  // bars
+  var cb=$("catBars"); cb.innerHTML="";
+  var order=CATS.map(function(cat,i){return {cat:cat,pct:catPct[i],i:i};});
+  order.sort(function(a,b){return a.pct-b.pct;});
+  for(var k=0;k<5;k++){
+    (function(row,delay){
+      var div=document.createElement("div"); div.className="cat-row";
+      div.innerHTML='<div class="cat-head"><b>'+row.cat.name+'</b><span>'+row.pct+' / 100</span></div>'+
+                    '<div class="bar"><div></div></div>';
+      cb.appendChild(div);
+      setTimeout(function(){ div.querySelector(".bar>div").style.width=row.pct+"%"; },120+delay*150);
+    })(order[k],k);
+  }
+  // top-3 fixes (lowest scoring categories)
+  var rc=$("recs"); rc.innerHTML="";
+  for(var j=0;j<3;j++){
+    var catId=order[j].cat.id, fix=FIXES[catId];
+    var div2=document.createElement("div"); div2.className="rec";
+    div2.innerHTML="<h3>"+(j+1)+". "+fix.t+' <span style="color:var(--muted);font-weight:400">('+order[j].cat.name+" · "+order[j].pct+"/100)</span></h3><p>"+fix.d+"</p>";
+    rc.appendChild(div2);
+  }
+  // embed snippet
+  var esc=biz.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  var badge='<div style="display:inline-flex;align-items:center;gap:10px;font-family:Arial,sans-serif;background:#0b0f1a;color:#fff;border:1px solid #26304d;border-radius:12px;padding:10px 16px;">'
+    +'<span style="font-size:28px;font-weight:800;background:linear-gradient(135deg,#6c4cf1,#00d1b2);-webkit-background-clip:text;background-clip:text;color:transparent;">'+total+'</span>'
+    +'<span><strong style="font-size:14px;">AI Readiness Score</strong><br><span style="font-size:12px;color:#9aa3b5;">'+esc+' · '+g+'</span></span>'
+    +'</div>';
+  $("embedBox").value=badge;
+  window._report = {total:total, grade:g, catPct:catPct, order:order};
+}
+function reportText(){
+  var r=window._report;
+  var lines=["AI READINESS SCORE — "+biz.toUpperCase(),
+    VERTS[vert]+" · Assessed "+new Date().toLocaleDateString(),"",
+    "Overall: "+r.total+"/100 — "+r.grade,"",
+    "Category breakdown:"];
+  for(var k=0;k<5;k++) lines.push("  · "+r.order[k].cat.name+": "+r.order[k].pct+"/100");
+  lines.push("","Top 3 recommended fixes:");
+  for(var j=0;j<3;j++){ var f=FIXES[r.order[j].cat.id]; lines.push((j+1)+". "+f.t+" — "+f.d); }
+  lines.push("","Generated by the AI Readiness Score demo (VisionQuantech prototype). Scores are indicative, not audited.");
+  return lines.join("\n");
+}
+function copyText(txt,okEl,msg){
+  function done(){ okEl.textContent=msg; setTimeout(function(){okEl.textContent="";},2500); }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done,function(){fallback();});
+  } else fallback();
+  function fallback(){
+    var ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta);
+    ta.select(); try{document.execCommand("copy");done();}catch(e){}
+    document.body.removeChild(ta);
+  }
+}
+$("copyReport").onclick=function(){ copyText(reportText(),$("reportOk"),"✓ Report copied to clipboard"); };
+$("copyEmbed").onclick=function(){ copyText($("embedBox").value,$("embedOk"),"✓ Badge code copied"); };
+$("embedBox").onclick=function(){ $("embedBox").select(); };
+$("retakeBtn").onclick=function(){ show("s-intro"); };
+})();
+</script>
+</body>
+</html>
