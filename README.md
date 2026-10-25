@@ -34,3 +34,7 @@ Then open http://localhost:8000 in a browser.
 - **Scoring is heuristic and client-side.** Each answer maps to 0–3 points; categories are weighted equally (mean of the five category percentages). Grades: 90+ AI-Ready, 70+ Almost There, 50+ Leaking Leads, 30+ Manual Mode, below 30 Urgent.
 - **No data leaves the browser.** No network calls, no analytics, no external CDNs, no build step, no API keys. It works over `file://` too.
 - Dependency-free: one `index.html` (inline CSS + vanilla JS), this `README.md`.
+
+## Built by VisionQuantech
+
+Part of the [VisionQuantech](https://visionquantech.com/) AI automation studio. See [AI automation services](https://visionquantech.com/ai-automation-services) and [AI automation in the UK](https://visionquantech.com/ai-automation-uk).
